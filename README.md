@@ -1,10 +1,24 @@
 
 # Webnetter API
-Plug and Play Network Management API built on Netmiko with optional GUI.
+Plug and Play Network Management API built on top of Netmiko with optional GUI.
 Webnetter API is able to communicate and configure data on all types of machines.
 
-Web GUI is built on VueJS with Vuetify (source files for GUI is under frontend/).
-The API is built on Flask.
+## Quick Links:
+- [Description](#description)
+- [Setup](#setup)
+- [Settings](#settings)
+- [Endpoints](#endpoints)
+- [Examples](#examples)
+- [Contribute](contribute)
+
+[:computer: Click here for Live demo :computer:](https://oppetinternet.se/webnetter)
+
+
+## Description
+
+Web GUI is built on VueJS with Vuetify (source for GUI is under frontend/).
+API & Backend is built on Flask together with Netmiko.
+The goal of the Webnetter API is to make it a portable but also a static Network Management tool for any network. We / I will develop more services for the Webnetter API. Feel free to come up with ideas on how we can improve the service.
 
 Responses from API follows specifications from https://github.com/omniti-labs/jsend.
 
@@ -19,7 +33,9 @@ Webnetter-API is using Netmiko for communicating with platforms such as:
 - HP ProCurve
 - Juniper Junos
 
-**Setup:**
+See [Netmiko](https://github.com/ktbyers/netmiko) for all supported platforms and more. 
+
+## Setup
 
     pip install --upgrade -r requirements.txt
 
@@ -32,7 +48,7 @@ Webnetter-API is using Netmiko for communicating with platforms such as:
     python webnetter.wsgi
  
 
-## **Settings** (settings.py)
+## Settings
 You can configure most of the main settings through the `settings.py` file which is located in the main folder.
 
  **TLS SSL**
@@ -198,3 +214,5 @@ Im open for future development ideas, start an issue and tell me what you would 
 
 **Found an error or want to help me write better code?**
 I like critic, if you find something in my code that's bad or can be enhached please start an issue and I'll respond you as fast as I can.
+
+# I :dog: OPEN SOURCE
