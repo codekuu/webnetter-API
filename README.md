@@ -1,7 +1,7 @@
-
-# Webnetter API
+<p align="center">
+  <img src="https://i.imgur.com/SWoPeSe.png">
 Plug and Play Network Management API built on top of Netmiko with optional GUI.
-Webnetter API is able to communicate and configure data on all types of machines.
+</p>
 
 ## Quick Links:
 - [Description](#description)
