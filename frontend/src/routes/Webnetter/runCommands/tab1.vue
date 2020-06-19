@@ -16,7 +16,7 @@
           </v-col>
           <v-col
             cols="4"
-            md="2"
+            md="3"
           >
             <v-text-field
               v-model="port"
@@ -26,7 +26,7 @@
           </v-col>
           <v-col
             cols="12"
-            md="4"
+            md="3"
           >
             <v-select
               v-model="software"
@@ -38,7 +38,7 @@
         </v-row>
         <v-row>
           <v-col
-            cols="12"
+            cols="6"
             md="6"
           >
             <v-text-field
@@ -48,7 +48,7 @@
             />
           </v-col>
           <v-col
-            cols="12"
+            cols="6"
             md="6"
           >
             <v-text-field
@@ -62,11 +62,9 @@
               @click:append="showPassword = !showPassword"
             />
           </v-col>
-        </v-row>
-        <v-row>
           <v-col
             cols="12"
-            md="12"
+            md="11"
           >
             <v-text-field
               v-model="command"
@@ -74,49 +72,152 @@
               outlined
             />
           </v-col>
+          <v-col
+            cols="12"
+            md="1"
+          >
+            <v-tooltip top>
+              <template v-slot:activator="{ on }">
+                <v-btn 
+                v-on="on"
+                x-large
+                :disabled="loading"
+                @click="pushHost(IPorHostname, port, software, username, password, command)"
+                >
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </template>
+              <span>Add host to RUN list</span>
+            </v-tooltip>
+          </v-col>
         </v-row>
+        <v-card-actions class="justify-center">
+          <v-btn 
+          style="display:block;"
+            :disabled="loading"
+            x-large 
+            @click="runCommand()"
+          >
+            {{ loading ? 'Fetching Data...' : 'Run' }}
+          </v-btn>
+        </v-card-actions>
       </v-card-text>
-      <v-card-actions class="justify-center">
-        <v-btn 
-        style="display:block;"
-          :disabled="loading"
-          x-large 
-          @click="runCommand(IPorHostname, port, software, username, password, command)"
+      <v-row justify="end">
+        <v-col
+          cols="2"
+          md="2"
         >
-          {{ loading ? 'Fetching Data...' : 'Run' }}
-        </v-btn>
-      </v-card-actions>
+          <v-file-input
+            @change="importExcel()"
+            placeholder="Import Excel"
+            outlined
+            dense
+            flat
+            type="file"
+            accept=".xls,.xlsx"
+            solo
+          >
+            <template v-slot:selection="{ text }">
+              <v-chip
+                label
+                color="primary"
+              >
+                {{ text }}
+              </v-chip>
+            </template>
+          </v-file-input>
+        </v-col>
+        <v-col
+          cols="1"
+          md="1"
+        >
+          <v-btn dense :disabled="!excelFile" @click="pushExcel()">ADD</v-btn>
+        </v-col>
+      </v-row>
+      <v-divider/>
+      <BaseTable
+      :headers="headers"
+      emptyText="Add host(s) by filling out the form above and press on add(+)"
+      :items="hostToRunCommand"
+      />
       <div v-if="loading">
         <v-progress-linear
           indeterminate
           color="blue"
         />
       </div>
-      <v-textarea
-        style="font: 16px monospace;!important"
-        v-if="showConsole"
-        :value="dataFromHost"
-        name="input-7-1"
-        class="ml-4 mr-4"
-        filled
-        readonly
-        label="Console: "
-        auto-grow
-      />
+      <div class="pa-3" v-if="showSummary">
+        <h2>Summary: </h2>
+        <br/>
+        <v-expansion-panels v-if="showSummary" focusable multiple>
+          <v-expansion-panel
+            v-for="(host,i) in hosts"
+            :key="i"
+          >
+            <v-expansion-panel-header hide-actions disable-icon-rotate>
+              <div>
+                <v-icon v-if="host.success" color="success">mdi-server</v-icon>
+                <v-icon v-else color="error">mdi-server</v-icon>
+                <span>{{ host.host }}</span>
+              </div>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-row>
+                <v-col
+                  cols="3"
+                  md="3"
+                >
+                  <v-text-field
+                    v-model="host.host"
+                    label="Host"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+                <v-col
+                  cols="3"
+                  md="3"
+                >
+                  <v-text-field
+                    v-model="host.software"
+                    label="Software"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+                <v-col
+                  cols="3"
+                  md="3"
+                >
+                  <v-text-field
+                    v-model="host.success"
+                    label="Success"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+              </v-row>
+              <v-textarea
+                style="font: 16px monospace;!important"
+                :value="host.output"
+                name="input-7-1"
+                class="ml-4 mr-4"
+                filled
+                readonly
+                label="Output: "
+                auto-grow
+              />
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </div>
     </v-card>
-    <BaseCard v-if="showLoop">
-      <v-data-table
-        :headers="headers"
-        :items="dataFromHostLoop"
-        :items-per-page="5"
-        class="elevation-1"
-      ></v-data-table>
-    </BaseCard>
 </div>
 </template>
 
 
 <script>
+import XLSX from 'xlsx';
 import axios from 'axios'
 import snackMessage from '@/api/Error.js'
 
@@ -124,20 +225,23 @@ export default {
   name: 'runCommands',
   data () {
     return {
-      software: "",
-      command: "display interface brief",
+      excelFile: "",
+      hostToRunCommand: [],
+      showSummary: false,
       showPassword: false,
-      IPorHostname: "",
-      username: "",
       loading: false,
-      dataFromHost: "",
-      showLoop: false,
-      dataFromHostLoop: [
-                        {"aging":"20", "vlan":"33", "mac":"abcd-1234-abcd"}, 
-                        {"aging":"45", "vlan":"13", "mac":"abcd-1234-efgh"}, 
-                        {"aging":"10", "vlan":"23", "mac":"efgh-abcd-4567"}
-                        ],
-      showConsole: false,
+      hosts: [],
+      headers:[
+        { text: 'Host', align: 'center', value: 'host' },
+        { text: 'Port', align: 'center', value: 'port' },
+        { text: 'Device Type', align: 'center', value: 'device_type' },
+        { text: 'SSH Username', align: 'center', value: 'username' },
+        { text: 'Command', align: 'center', value: 'command' },
+        { text: 'Actions',align: 'right', value: 'action', sortable: false },
+      ],
+      IPorHostname: "",
+      software: "",
+      username: "",
       password: "",
       port: 22,
       diffrentSoftware: [
@@ -152,55 +256,77 @@ export default {
         {text: "Juniper", value: "juniper"},
         {text: "JunOS", value: "juniper_junos"},
         {text: "Linux", value: "linux"}
-      ]
-    }
-  },
-  computed:{
-    headers () {
-    if (this.dataFromHostLoop.length) {
-      return Object.keys(this.dataFromHostLoop[0]).map(row => {
-        return {
-          text: row.toUpperCase(),
-          value: row,
-        }
-      })
-    }
-    return []
-    
+      ],
+      command: "display interface brief",
     }
   },
   methods: {
-    runCommand(IPorHostname, port, software, username, password, command) {
-      if (IPorHostname !== '' && port !== '' && software !== '' && username !== '' && password !== '' && command ) {
-        let data = {
-          "host" : IPorHostname,
-          "username": username,
-          "password": btoa(password),
-          "device_type": software, 
-          "port": port,
-          "command": command
+    importExcel(){
+       this.excelFile = event.target.files[0];
+    },
+    pushExcel(){
+      XLSX.utils.json_to_sheet(this.hosts, "out.xlsx");
+      if (this.excelFile) {
+        let fileReader = new FileReader();
+        fileReader.readAsBinaryString(this.excelFile);
+        fileReader.onload = event => {
+          let data = event.target.result;
+          let workbook = XLSX.read(data, { type: "binary" });
+          workbook.SheetNames.forEach(sheet => {
+            let excelArray = XLSX.utils.sheet_to_row_object_array(
+              workbook.Sheets[sheet]
+            );
+            for (const object in excelArray) {
+              let excelObject = excelArray[object]
+              let keysInObject = Object.keys(excelObject)
+              if(excelObject['host'] !== undefined){
+                this.pushHost(excelObject['host'], excelObject['port'], excelObject['software'], excelObject['username'], excelObject['password'], excelObject['command'])
+              } else {
+                snackMessage("Import Error", 'Missing data in excel.', "red")
+              }
+            }
+          });
+        };
+      }
+    },
+    pushHost(IPorHostname, port, software, username, password, command){
+      if (IPorHostname !== '' && software !== '' && username !== '' && password !== '' && command !== '') {
+        if (!this.hostToRunCommand.some(hosts => hosts.host === IPorHostname)){
+          let data = {
+            "host" : IPorHostname,
+            "username": username,
+            "password": btoa(password),
+            "device_type": software, 
+            "port": port || 22,
+            "command": command,
+          }
+          this.hostToRunCommand.push(data)
+        } else {
+          snackMessage("Error", "Host or IP address does already exist.", "red")
         }
+      }else{
+        snackMessage("Error", "Missing data, try again.", "red")
+      }
+    },
+    runCommand() {
+      if (this.hostToRunCommand.length != 0) {
         this.loading = true
-        this.showConsole = false
-		this.showLoop = false
-        axios.post('/webnetter/runcommand', data)
+        this.showSummary = false
+
+        let hosts = JSON.stringify(this.hostToRunCommand);
+        let data = {'hosts': hosts}
+
+        axios.post('/webnetter/runcommands', data)
           .then((response) => {
             if (response.data.status == "success"){
-              snackMessage("Success", "Success, session closed towards " + IPorHostname, "green")
+              snackMessage("Success", "Configuration sent", "green")
               this.loading = false
-             
-              if (typeof(response.data.data.dataFromHost) == "string"){
-                this.dataFromHost = response.data.data.dataFromHost
-                this.showConsole = true
-                this.showLoop = false
-              }else{
-                this.dataFromHostLoop = response.data.data.dataFromHost
-                this.showLoop = true
-              }
+              this.hosts = response.data.data
+              this.showSummary = true
+
             }else{
               this.loading = false
               snackMessage("Network Error", response.data.message, "red")
-              this.showConsole = false
             }
           })
           .catch((error) => {
@@ -208,7 +334,7 @@ export default {
             snackMessage("Network Error", error, "red")
           })
       } else {
-        snackMessage("Error", "Missing data in request, try again.", "red")
+        snackMessage("Error", "Missing host(s) in data, try again.", "red")
       }
     },
   },

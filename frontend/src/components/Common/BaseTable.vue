@@ -21,11 +21,25 @@
                   <v-col cols="12" sm="4" md="4">
                     <v-text-field outlined v-model="editedItem.port" label="SSH Port"></v-text-field>
                   </v-col>
+                  <v-col cols="12" sm="12" md="12">
+                    <v-select
+                      v-model="editedItem.device_type"
+                      :items="diffrentSoftware"
+                      label="Software on host"
+                      outlined
+                    />
+                  </v-col>
                   <v-col cols="12" sm="6" md="6">
                     <v-text-field outlined v-model="editedItem.username" label="SSH Username"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="6">
                     <v-text-field outlined type="password" v-model="editedItem.password" label="SSH Password"></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="12" md="12">
+                    <v-text-field outlined v-if="holder.command" v-model="editedItem.command" label="Command to run"></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="12" md="12">
+                    <v-text-field outlined v-if="holder.location" v-model="editedItem.location" label="File Location"></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -63,20 +77,44 @@
 <script>
   export default {
     data: () => ({
+      holder: {},
       dialog: false,
       editedIndex: -1,
       editedItem: {
         host: '',
         username: '',
+        password: '',
         device_type: '',
+        location: '',
         port: '',
+        command: ''
       },
       defaultItem: {
         host: '',
         username: '',
+        password: '',
         device_type: '',
+        location: '',
         port: '',
+        command: ''
       },
+      holder: {
+        location: false,
+        command: false,
+      },
+      diffrentSoftware: [
+        {text: "Arista eOS", value: "arista_eos"},
+        {text: "Cisco IOS", value: "cisco_ios"},
+        {text: "Cisco XE", value: "cisco_xe"},
+        {text: "Cisco ASA", value: "cisco_asa"},
+        {text: "Cisco nxOS", value: "cisco_nxos"},
+        {text: "Fortinet", value: "fortinet"},
+        {text: "HP Comware", value: "hp_comware"},
+        {text: "HP Procurve", value: "hp_procurve"},
+        {text: "Juniper", value: "juniper"},
+        {text: "JunOS", value: "juniper_junos"},
+        {text: "Linux", value: "linux"}
+      ]
     }),
     props: {
       items: {
@@ -105,8 +143,14 @@
     },
     methods: {
       editItem (item) {
+        for (const i in this.headers) {
+          let valName = this.headers[i].value
+          if (valName == 'location'){this.holder.location = true}
+          if (valName == 'command'){this.holder.command = true}
+        }
         this.editedIndex = this.items.indexOf(item)
         this.editedItem = Object.assign({}, item)
+        this.defaultItem = Object.assign({}, item)
         this.dialog = true
       },
 

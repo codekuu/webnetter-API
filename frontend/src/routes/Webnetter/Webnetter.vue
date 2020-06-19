@@ -32,9 +32,6 @@
       </v-tab-item>
 
     </v-tabs-items>
-
-    <tosAgree class="ma-5"/>
-
 </div>
 </template>
 

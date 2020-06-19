@@ -21,7 +21,7 @@
             class="white--text title text-center"
             @click="$router.push({name:'home'})"
           >
-            WebNetter API
+            Webnetter API
           </div>
         </transition>
       </v-col>
@@ -33,7 +33,7 @@
       v-if="!mini" 
       class="white--text heading text-center fwl"
     >
-      <b>Version:</b> 1.0
+      <b>Version:</b> 1.1
     </div>
     <v-divider 
       v-if="!mini"

@@ -4,6 +4,7 @@ import router from './router'
 import store from './vuex'
 import vuetify from './plugins/vuetify'
 
+
 Vue.config.productionTip = false
 
 
@@ -11,9 +12,6 @@ Vue.config.productionTip = false
 // COMPONENTS
 import menu from '@/components/Common/BaseCard.vue'
 Vue.component('BaseCard', menu)
-
-import tosAgree from '@/components/Common/tosAgree.vue'
-Vue.component('tosAgree', tosAgree)
 
 import BaseTable from '@/components/Common/BaseTable.vue'
 Vue.component('BaseTable', BaseTable)
