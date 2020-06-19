@@ -98,6 +98,7 @@
               @change="handleFileUpload"
               placeholder="Configuration File"
               outlined
+              accept=".txt,.conf,.cfg"
               type="file"
               solo
             >
@@ -132,6 +133,38 @@
           </v-col>
         </v-row>
       </v-card-actions>
+      <v-row justify="end">
+        <v-col
+          cols="2"
+          md="2"
+        >
+          <v-file-input
+            @change="importExcel()"
+            placeholder="Import Excel"
+            outlined
+            dense
+            flat
+            type="file"
+            accept=".xls,.xlsx"
+            solo
+          >
+            <template v-slot:selection="{ text }">
+              <v-chip
+                label
+                color="primary"
+              >
+                {{ text }}
+              </v-chip>
+            </template>
+          </v-file-input>
+        </v-col>
+        <v-col
+          cols="1"
+          md="1"
+        >
+          <v-btn dense :disabled="!excelFile" @click="pushExcel()">ADD</v-btn>
+        </v-col>
+      </v-row>
       <v-divider/>
       <BaseTable
       :headers="headers"
@@ -144,36 +177,92 @@
           color="blue"
         />
       </div>
-      <v-textarea
-        style="font: 16px monospace;!important"
-        v-if="showConsole"
-        :value="dataFromHost"
-        name="input-7-1"
-        class="ml-4 mr-4"
-        filled
-        readonly
-        label="Console: "
-        auto-grow
-      />
+      <div class="pa-3" v-if="showSummary">
+        <h2>Summary: </h2>
+        <br/>
+        <v-expansion-panels v-if="showSummary" focusable multiple>
+          <v-expansion-panel
+            v-for="(host,i) in hosts"
+            :key="i"
+          >
+            <v-expansion-panel-header hide-actions disable-icon-rotate>
+              <div>
+                <v-icon v-if="host.success" color="success">mdi-server</v-icon>
+                <v-icon v-else color="error">mdi-server</v-icon>
+                <span>{{ host.host }}</span>
+              </div>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-row>
+                <v-col
+                  cols="3"
+                  md="3"
+                >
+                  <v-text-field
+                    v-model="host.host"
+                    label="Host"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+                <v-col
+                  cols="3"
+                  md="3"
+                >
+                  <v-text-field
+                    v-model="host.software"
+                    label="Software"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+                <v-col
+                  cols="3"
+                  md="3"
+                >
+                  <v-text-field
+                    v-model="host.success"
+                    label="Success"
+                    readonly
+                    outlined
+                  />
+                </v-col>
+              </v-row>
+              <v-textarea
+                style="font: 16px monospace;!important"
+                :value="host.output"
+                name="input-7-1"
+                class="ml-4 mr-4"
+                filled
+                readonly
+                label="Output: "
+                auto-grow
+              />
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </div>
     </v-card>
 </div>
 </template>
 
 
 <script>
+import XLSX from 'xlsx';
 import axios from 'axios'
 import snackMessage from '@/api/Error.js'
 
 export default {
-  name: 'runCommands',
+  name: 'configure',
   data () {
     return {
       file: "",
+      excelFile: "",
       hostToConfigure: [],
-      showConsole: false,
+      showSummary: false,
       showPassword: false,
       loading: false,
-      dataFromHost: "",
+      hosts: [],
       headers:[
         { text: 'Host', align: 'center', value: 'host' },
         { text: 'Port', align: 'center', value: 'port' },
@@ -202,6 +291,34 @@ export default {
     }
   },
   methods: {
+    importExcel(){
+       this.excelFile = event.target.files[0];
+    },
+    pushExcel(){
+      XLSX.utils.json_to_sheet(this.hosts, "out.xlsx");
+      if (this.excelFile) {
+        let fileReader = new FileReader();
+        fileReader.readAsBinaryString(this.excelFile);
+        fileReader.onload = event => {
+          let data = event.target.result;
+          let workbook = XLSX.read(data, { type: "binary" });
+          workbook.SheetNames.forEach(sheet => {
+            let excelArray = XLSX.utils.sheet_to_row_object_array(
+              workbook.Sheets[sheet]
+            );
+            for (const object in excelArray) {
+              let excelObject = excelArray[object]
+              let keysInObject = Object.keys(excelObject)
+              if(excelObject['host'] !== undefined){
+                this.pushHost(excelObject['host'], excelObject['port'], excelObject['software'], excelObject['username'], excelObject['password'])
+              } else {
+                snackMessage("Import Error", 'Missing data in excel.', "red")
+              }
+            }
+          });
+        };
+      }
+    },
     handleFileUpload(event){
       this.file = event
     },
@@ -213,7 +330,7 @@ export default {
             "username": username,
             "password": btoa(password),
             "device_type": software, 
-            "port": port,
+            "port": port || 22,
           }
           this.hostToConfigure.push(data)
         } else {
@@ -232,15 +349,15 @@ export default {
         data.append('file', this.file);
 
         var hostData = JSON.stringify(this.hostToConfigure);
-        data.append('hostData', hostData)
+        data.append('hosts', hostData)
 
         axios.post('/webnetter/configure', data, {headers: {'Content-Type': 'multipart/form-data'}})
           .then((response) => {
             if (response.data.status == "success"){
               snackMessage("Success", "Configuration sent", "green")
               this.loading = false
-              this.dataFromHost = response.data.data.dataFromHost
-              this.showConsole = true
+              this.hosts = response.data.data
+              this.showSummary = true
 
             }else{
               this.loading = false

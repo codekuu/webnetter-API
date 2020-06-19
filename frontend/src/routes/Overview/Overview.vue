@@ -6,10 +6,9 @@
         flat
       >
         <v-card-title class="justify-center display-1 font-weight-thin">
-          WebNetter API
+          <b>Webnetter API</b>
         </v-card-title>
         <v-card-text>
-          <br>
           <br>Webnetter API is a network management API built on Netmiko.
           <br>Built for communication and configuration of devices.
           <br>
@@ -36,6 +35,7 @@
             Documentation
           </v-btn>
         </v-card-actions>
+        <br>
       </v-card>
     </v-row>
   </BaseCard> 
