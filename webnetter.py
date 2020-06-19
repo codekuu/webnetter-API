@@ -26,7 +26,6 @@ app = Flask(__name__,
 # BACKEND
 os.chdir(settings.backendFilePath)  # Backend Filepath from settings.py
 blacklistHosts = os.path.join(settings.blackListFile)  # Blacklist from settings.py
-############################
 
 
 ###################
@@ -35,7 +34,6 @@ def dataLogger(IPaddress, requestData, call):
     logFile = open(settings.logFile, "a")  # In settings.py
     dateNtime = datetime.datetime.now()
     logFile.write(str(dateNtime) + " - " + IPaddress + " - " + requestData + ' - ' + call + "\n")
-###################
 
 
 ####################
@@ -76,17 +74,13 @@ def getICMP(hostname):
                 return jsonify({"status": "error", "message": "No endpoint matching request."})
         else:
             return jsonify({"status": "error", "message": "Host exist in blacklist."})
-###################
 
 
 ###################
 # RUN COMMAND
-@app.route("/webnetter/runcommand", methods=['POST'])
+@app.route("/webnetter/runcommands", methods=['POST'])
 def connect():
     with open(blacklistHosts, 'r') as blacklist:
-        if request.json['host'] in blacklist.read():
-            return jsonify({"status": "error", "message": "Host exist in blacklist."})
-
         if request.remote_addr not in blacklist.read():
 
             if request.method == 'POST':
@@ -103,7 +97,6 @@ def connect():
                 return jsonify({"status": "error", "message": "No endpoint matching request."})
         else:
             return jsonify({"status": "error", "message": "Host exist in blacklist."})
-###################
 
 
 ###################
@@ -127,7 +120,6 @@ def configure():
                 return jsonify({"status": "error", "message": "No endpoint matching request."})
         else:
             return jsonify({"status": "error", "message": "Host exist in blacklist."})
-###################
 
 
 ###################
@@ -151,7 +143,6 @@ def scp():
                 return jsonify({"status": "error", "message": "No endpoint matching request."})
         else:
             return jsonify({"status": "error", "message": "Host exist in blacklist."})
-###################
 
 
 if __name__ == "__main__":
