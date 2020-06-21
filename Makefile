@@ -4,5 +4,5 @@ install:
 
 .PHONY: start_dev_env
 start_dev_env:
-	python webnetter.py
+	python backend/webnetter.py
 

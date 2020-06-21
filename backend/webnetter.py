@@ -6,10 +6,10 @@ import config
 
 ######################################
 # BACKEND FILES
-from backend.networkTools.ping.pinger import Pinger as pingHost
-from backend.networkTools.runcommand.execCustomCommand import execCustomCommand as commandAPI
-from backend.networkTools.configure.execConfigure import execConfigure as confAPI
-from backend.networkTools.scp.scpFile import sendFile as scpAPI
+from networkTools.ping.pinger import Pinger as pingHost
+from networkTools.runcommand.execCustomCommand import execCustomCommand as commandAPI
+from networkTools.configure.execConfigure import execConfigure as confAPI
+from networkTools.scp.scpFile import sendFile as scpAPI
 
 
 ###################
@@ -19,12 +19,11 @@ from flask import Flask, jsonify, request, render_template
 
 
 app = Flask(__name__,
-            static_folder="./dist/static",
-            template_folder="./dist")
+            static_folder="../dist/static",
+            template_folder=".,/dist")
 
 ###################
 # BACKEND
-os.chdir(config.backendFilePath)  # Backend Filepath from config.py
 blacklistHosts = os.path.join(config.blackListFile)  # Blacklist from config.py
 
 

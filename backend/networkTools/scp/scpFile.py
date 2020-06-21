@@ -17,7 +17,6 @@ class sendFile:
 
         ###################
         # BACKEND
-        os.chdir(config.backendFilePath)  # Backend Filepath from config.py
         blacklistHosts = os.path.join(config.blackListFile)  # Blacklist from config.py
         ############################
 

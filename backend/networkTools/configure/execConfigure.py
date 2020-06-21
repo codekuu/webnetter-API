@@ -17,7 +17,6 @@ class execConfigure:
 
         ###################
         # BACKEND
-        os.chdir(settings.backendFilePath)  # Backend Filepath from settings.py
         blacklistHosts = os.path.join(settings.blackListFile)  # Blacklist from settings.py
         ############################
 
