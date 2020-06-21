@@ -2,7 +2,7 @@
 
 import os
 import datetime
-import settings
+import config
 
 ######################################
 # BACKEND FILES
@@ -24,25 +24,25 @@ app = Flask(__name__,
 
 ###################
 # BACKEND
-os.chdir(settings.backendFilePath)  # Backend Filepath from settings.py
-blacklistHosts = os.path.join(settings.blackListFile)  # Blacklist from settings.py
+os.chdir(config.backendFilePath)  # Backend Filepath from config.py
+blacklistHosts = os.path.join(config.blackListFile)  # Blacklist from config.py
 
 
 ###################
 # LOGGER
 def dataLogger(IPaddress, requestData, call):
-    logFile = open(settings.logFile, "a")  # In settings.py
+    logFile = open(config.logFile, "a")  # In config.py
     dateNtime = datetime.datetime.now()
     logFile.write(str(dateNtime) + " - " + IPaddress + " - " + requestData + ' - ' + call + "\n")
 
 
 ####################
 # START / ROUTE
-if settings.gui_enabled:  # Enables frontend gui
+if config.gui_enabled:  # Enables frontend gui
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
     def catch_all(path):
-        return render_template(settings.indexFile)  # In settings.py
+        return render_template(config.indexFile)  # In config.py
 else:
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
@@ -146,7 +146,7 @@ def scp():
 
 
 if __name__ == "__main__":
-    if settings.ssl_enabled:  # Change this in Settings.py
-        app.run(host=settings.backendHost, ssl_context=(settings.fullchain, settings.privkey))
+    if config.ssl_enabled:  # Change this in Settings.py
+        app.run(host=config.backendHost, ssl_context=(config.fullchain, config.privkey))
     else:
-        app.run(host=settings.backendHost)
+        app.run(host=config.backendHost)

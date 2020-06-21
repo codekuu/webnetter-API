@@ -4,7 +4,7 @@
 import os
 import json
 import base64
-import settings
+import config
 
 # NETMIKO
 from netmiko import ConnectHandler
