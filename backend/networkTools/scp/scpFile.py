@@ -4,7 +4,7 @@
 import os
 import json
 import base64
-import settings
+import config
 
 # NETMIKO
 from netmiko import ConnectHandler, file_transfer
@@ -17,8 +17,7 @@ class sendFile:
 
         ###################
         # BACKEND
-        os.chdir(settings.backendFilePath)  # Backend Filepath from settings.py
-        blacklistHosts = os.path.join(settings.blackListFile)  # Blacklist from settings.py
+        blacklistHosts = os.path.join(config.blackListFile)  # Blacklist from config.py
         ############################
 
         # Setting standard Request Message

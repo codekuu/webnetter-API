@@ -4,6 +4,7 @@ server-calls.log
 venv/
 backend/networkTools/configure/CONFIGURATION_FOLDER/*
 backend/networkTools/scp/CONFIGURATION_FOLDER/*
+dist/
 
 # GITHUB IGNORE BOILERPLATE
 # Byte-compiled / optimized / DLL files

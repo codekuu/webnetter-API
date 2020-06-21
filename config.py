@@ -20,7 +20,7 @@ indexFile = 'index.html'  # FLASK render_template
 ###################
 # GENERAL
 file_directory_helper = os.path.dirname(__file__)
-backendFilePath = file_directory_helper + '/backend'  # Filepath for the backend
+backendFilePath = file_directory_helper  # Filepath for the backend
 logFile = file_directory_helper + '/server-calls.log'  # Logfile
 blackListFile = 'blacklistHosts.txt'  # BlackList Host File
 
@@ -29,15 +29,15 @@ gui_enabled = True  # True / False
 
 # Text FSM
 useTextFSM = True  # Netmiko NTC template usage.
-os.environ["NET_TEXTFSM"] = file_directory_helper + '/backend/libs/ntc-templates/templates/'  # Create ENV for TextFSM
+os.environ["NET_TEXTFSM"] = file_directory_helper + '/libs/ntc-templates/templates/'  # Create ENV for TextFSM
 ###################
 
 
 ###################
 # TLS / SSL
 ssl_enabled = False
-fullchain = 'cert/fullchain.pem'  # Place the files in backend/cert/
-privkey = 'cert/privkey.pem'  # Place the files in backend/cert/
+fullchain = '../cert/fullchain.pem'  # Place the files in backend/cert/
+privkey = '../cert/privkey.pem'  # Place the files in backend/cert/
 ###################
 
 
@@ -46,11 +46,11 @@ privkey = 'cert/privkey.pem'  # Place the files in backend/cert/
 tmp = subprocess.call('clear', shell=True)
 
 print("""
-__          ________ ____  _   _ ______ _______ _______ ______ _____             _____ _____ 
+__          ________ ____  _   _ ______ _______ _______ ______ _____             _____ _____
 \ \        / /  ____|  _ \| \ | |  ____|__   __|__   __|  ____|  __ \      /\   |  __ \_   _|
- \ \  /\  / /| |__  | |_) |  \| | |__     | |     | |  | |__  | |__) |    /  \  | |__) || |  
-  \ \/  \/ / |  __| |  _ <| . ` |  __|    | |     | |  |  __| |  _  /    / /\ \ |  ___/ | |  
-   \  /\  /  | |____| |_) | |\  | |____   | |     | |  | |____| | \ \   / ____ \| |    _| |_ 
+ \ \  /\  / /| |__  | |_) |  \| | |__     | |     | |  | |__  | |__) |    /  \  | |__) || |
+  \ \/  \/ / |  __| |  _ <| . ` |  __|    | |     | |  |  __| |  _  /    / /\ \ |  ___/ | |
+   \  /\  /  | |____| |_) | |\  | |____   | |     | |  | |____| | \ \   / ____ \| |    _| |_
     \/  \/   |______|____/|_| \_|______|  |_|     |_|  |______|_|  \_\ /_/    \_\_|   |_____|
 
 Version: 1.0

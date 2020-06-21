@@ -4,7 +4,7 @@
 import os
 import json
 import base64
-import settings
+import config
 
 # NETMIKO
 from netmiko import ConnectHandler
@@ -17,8 +17,7 @@ class execCustomCommand:
 
         ###################
         # BACKEND
-        os.chdir(settings.backendFilePath)  # Backend Filepath from settings.py
-        blacklistHosts = os.path.join(settings.blackListFile)  # Blacklist from settings.py
+        blacklistHosts = os.path.join(config.blackListFile)  # Blacklist from config.py
         ############################
 
         # Setting standard Request Message
@@ -46,7 +45,7 @@ class execCustomCommand:
                             try:
                                 # OPERATION
                                 net_connect = ConnectHandler(**connectData)
-                                response = net_connect.send_command(host['command'], use_textfsm=settings.useTextFSM)
+                                response = net_connect.send_command(host['command'], use_textfsm=config.useTextFSM)
                                 responseData.append({'success': True, 'host': host['host'], 'software': host['device_type'], 'output': response})
 
                             except Exception as error_message:

@@ -2,14 +2,14 @@
 
 import os
 import datetime
-import settings
+import config
 
 ######################################
 # BACKEND FILES
-from backend.networkTools.ping.pinger import Pinger as pingHost
-from backend.networkTools.runcommand.execCustomCommand import execCustomCommand as commandAPI
-from backend.networkTools.configure.execConfigure import execConfigure as confAPI
-from backend.networkTools.scp.scpFile import sendFile as scpAPI
+from networkTools.ping.pinger import Pinger as pingHost
+from networkTools.runcommand.execCustomCommand import execCustomCommand as commandAPI
+from networkTools.configure.execConfigure import execConfigure as confAPI
+from networkTools.scp.scpFile import sendFile as scpAPI
 
 
 ###################
@@ -19,30 +19,29 @@ from flask import Flask, jsonify, request, render_template
 
 
 app = Flask(__name__,
-            static_folder="./dist/static",
-            template_folder="./dist")
+            static_folder="../dist/static",
+            template_folder="../dist")
 
 ###################
 # BACKEND
-os.chdir(settings.backendFilePath)  # Backend Filepath from settings.py
-blacklistHosts = os.path.join(settings.blackListFile)  # Blacklist from settings.py
+blacklistHosts = os.path.join(config.blackListFile)  # Blacklist from config.py
 
 
 ###################
 # LOGGER
 def dataLogger(IPaddress, requestData, call):
-    logFile = open(settings.logFile, "a")  # In settings.py
+    logFile = open(config.logFile, "a")  # In config.py
     dateNtime = datetime.datetime.now()
     logFile.write(str(dateNtime) + " - " + IPaddress + " - " + requestData + ' - ' + call + "\n")
 
 
 ####################
 # START / ROUTE
-if settings.gui_enabled:  # Enables frontend gui
+if config.gui_enabled:  # Enables frontend gui
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
     def catch_all(path):
-        return render_template(settings.indexFile)  # In settings.py
+        return render_template(config.indexFile)  # In config.py
 else:
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
@@ -146,7 +145,7 @@ def scp():
 
 
 if __name__ == "__main__":
-    if settings.ssl_enabled:  # Change this in Settings.py
-        app.run(host=settings.backendHost, ssl_context=(settings.fullchain, settings.privkey))
+    if config.ssl_enabled:  # Change this in Settings.py
+        app.run(host=config.backendHost, ssl_context=(config.fullchain, config.privkey))
     else:
-        app.run(host=settings.backendHost)
+        app.run(host=config.backendHost)
