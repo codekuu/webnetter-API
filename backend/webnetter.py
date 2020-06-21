@@ -20,7 +20,7 @@ from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__,
             static_folder="../dist/static",
-            template_folder=".,/dist")
+            template_folder="../dist")
 
 ###################
 # BACKEND
