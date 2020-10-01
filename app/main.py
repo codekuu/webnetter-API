@@ -58,78 +58,56 @@ else:
 # PING
 @app.get("/webnetter/ping/{hostname}")
 def getICMP(request: Request, hostname: str):
-    with open(blacklistHosts, 'r') as blacklist:
-        if hostname in blacklist.read():
-            return {"status": "error", "message": "Host exist in blacklist."}
+    try:
+        call = pingHost.ping(hostname)
+        dataLogger(request.client.host, request.body(), str(call))
+        return {"status": "success", "data": call}
 
-        if request.client.host not in blacklist.read():
-            try:
-                call = pingHost.ping(hostname)
-                dataLogger(request.client.host, request.body(), str(call))
-                return {"status": "success", "data": call}
-
-            except Exception as e:
-                dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
-                return {"status": "fail", "message": "Operation failed, try again or contact admin."}
-        else:
-            return {"status": "error", "message": "Host exist in blacklist."}
+    except Exception as e:
+        dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
+        return {"status": "fail", "message": "Operation failed, try again or contact admin."}
 
 
 ###################
 # RUN COMMAND
 @app.post("/webnetter/runcommands")
 def run_commands_on_hosts(request: Request, hosts: Runcommands_model):
-    hosts_dict = hosts.dict()
-    with open(blacklistHosts, 'r') as blacklist:
-        if request.client.host not in blacklist.read():
-            call = asyncio.run(commandAPI.ecc(request, hosts_dict['hosts']))
-            dataLogger(request.client.host, request.body(), str(call))
-            return {"status": "success", "data": call}
+    try:
+        hosts_dict = hosts.dict()
+        call = asyncio.run(commandAPI.ecc(request, hosts_dict['hosts']))
+        dataLogger(request.client.host, request.body(), str(call))
+        return {"status": "success", "data": call}
 
-        else:
-            return {"status": "error", "message": "Host exist in blacklist."}
+    except Exception as e:
+        dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
+        return {"status": "fail", "message": "Operation failed, try again or contact admin."}
 
 
 ###################
 # CONFIGURE
 @app.post("/webnetter/configure")
 def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile = File(...)):
-    with open(blacklistHosts, 'r') as blacklist:
-        if request.client.host not in blacklist.read():
-            try:
-                json_hosts = json.loads(hosts)
-                call = asyncio.run(confAPI.execConf(request, json_hosts, file))
-                dataLogger(request.client.host, request.body(), str(call))
-                return {"status": "success", "data": call}
+    try:
+        json_hosts = json.loads(hosts)
+        call = asyncio.run(confAPI.execConf(request, json_hosts, file))
+        dataLogger(request.client.host, request.body(), str(call))
+        return {"status": "success", "data": call}
 
-            except Exception as e:
-                dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
-                return {"status": "fail", "message": "Operation failed, try again or contact admin."}
-        else:
-            return {"status": "error", "message": "Host exist in blacklist."}
+    except Exception as e:
+        dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
+        return {"status": "fail", "message": "Operation failed, try again or contact admin."}
 
 
 ###################
 # SCP
 @app.post("/webnetter/scp")
 def scp_file_to_hosts(request: Request, hosts: str = Form(...), file: UploadFile = File(...)):
-    with open(blacklistHosts, 'r') as blacklist:
-        if request.client.host not in blacklist.read():
-            try:
-                json_hosts = json.loads(hosts)
-                call = asyncio.run(scpAPI.execSCP(request, json_hosts, file))
-                dataLogger(request.client.host, request.body(), str(call))
-                return {"status": "success", "data": call}
+    try:
+        json_hosts = json.loads(hosts)
+        call = asyncio.run(scpAPI.execSCP(request, json_hosts, file))
+        dataLogger(request.client.host, request.body(), str(call))
+        return {"status": "success", "data": call}
 
-            except Exception as e:
-                dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
-                return {"status": "fail", "message": "Operation failed, try again or contact admin."}
-        else:
-            return {"status": "error", "message": "Host exist in blacklist."}
-
-
-if __name__ == "__main__":
-    if config.ssl_enabled:  # Change this in Settings.py
-        app.run(host=config.backendHost, ssl_context=(config.fullchain, config.privkey))
-    else:
-        app.run(host=config.backendHost)
+    except Exception as e:
+        dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
+        return {"status": "fail", "message": "Operation failed, try again or contact admin."}
