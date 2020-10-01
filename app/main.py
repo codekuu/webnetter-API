@@ -95,11 +95,12 @@ def run_commands_on_hosts(request: Request, hosts: model_request_runcommands):
         # Put output from all hosts in one string
         output_from_all = ""
         for data in call:
-            output_from_all += f"{data['host']}_{data['software']}:\n{data['output']}\n"
+            fixed_data = data['output'].replace("\n", f"\n[{data['host']} {data['software']}] ")
+            output_from_all += f"[{data['host']} {data['software']}] {fixed_data}\n"
 
         return JSONResponse(
             status_code=200,
-            content={"status": "success", "data": call, "outputFromAll": output_from_all}
+            content={"status": "success", "data": call, "outputFromAll": f'{output_from_all}\n'}
         )
 
     except Exception as e:
@@ -127,11 +128,12 @@ def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile =
         # Put output from all hosts in one string
         output_from_all = ""
         for data in call:
-            output_from_all += f"{data['host']}_{data['software']}:\n{data['output']}\n"
+            fixed_data = data['output'].replace("\n", f"\n[{data['host']} {data['software']}] ")
+            output_from_all += f"[{data['host']} {data['software']}] {fixed_data}\n"
 
         return JSONResponse(
             status_code=200,
-            content={"status": "success", "data": call, "outputFromAll": output_from_all}
+            content={"status": "success", "data": call, "outputFromAll": f'{output_from_all}\n'}
         )
 
     except Exception as e:
@@ -159,11 +161,12 @@ def scp_file_to_hosts(request: Request, hosts: str = Form(...), file: UploadFile
         # Put output from all hosts in one string
         output_from_all = ""
         for data in call:
-            output_from_all += f"{data['host']}_{data['software']}:\n{data['output']}\n"
+            fixed_data = data['output'].replace("\n", f"\n[{data['host']} {data['software']}] ")
+            output_from_all += f"[{data['host']} {data['software']}] {fixed_data}\n"
 
         return JSONResponse(
             status_code=200,
-            content={"status": "success", "data": call, "outputFromAll": output_from_all}
+            content={"status": "success", "data": call, "outputFromAll": f'{output_from_all}\n'}
         )
 
     except Exception as e:
