@@ -22,7 +22,15 @@ from basemodels import model_response_ping, model_response_general, model_reques
 import asyncio
 ###################
 
-app = FastAPI()
+if config.swagger_enabled:
+    app = FastAPI(
+        title="Webnetter API",
+        description="Plug and Play Network Management API built on Docker, fastAPI & Netmiko with optional GUI.",
+        version=config.webnetterAPI_version,
+        redoc_url=None
+        )
+else:
+    app = FastAPI(docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory="dist/static"), name="static")
 
 

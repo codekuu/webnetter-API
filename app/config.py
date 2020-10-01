@@ -23,6 +23,7 @@ blackListFile = 'blacklistHosts.txt'
 
 # Enable GUI
 gui_enabled = True  # True / False
+swagger_enabled = True  # True / False
 
 ########################################################
 # SCRIPT START OUTPUT
