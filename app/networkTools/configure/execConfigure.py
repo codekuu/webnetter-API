@@ -66,7 +66,7 @@ class execConfigure:
 
                             except Exception as error_message:
                                 info = str(error_message)
-                                print(host['host'] + " - " + info)
+                                config.logger.warning(f"{host['host']} {info}")
                                 responseData.append({'success': False, 'host': host['host'], 'output': info})
 
                             # Close and remove file.
@@ -79,7 +79,7 @@ class execConfigure:
 
                 except Exception as error_message:
                     info = str(error_message)
-                    print(host['host'] + " - " + info)
+                    config.logger.warning(f"{host['host']} {info}")
                     responseData.append({'success': False, 'host': host['host'], 'output': info})
 
         return responseData

@@ -48,13 +48,13 @@ class execCustomCommand:
                         try:
                             # OPERATION
                             net_connect = ConnectHandler(**connectData)
-                            response = net_connect.send_command(host['command'], use_textfsm=config.useTextFSM)
+                            response = net_connect.send_command(host['command'])
                             net_connect.disconnect()
                             responseData.append({'success': True, 'host': host['host'], 'software': host['device_type'], 'output': response})
 
                         except Exception as error_message:
                             info = str(error_message)
-                            print(host['host'] + " - " + info)
+                            config.logger.warning(f"{host['host']} {info}")
                             responseData.append({'success': False, 'host': host['host'], 'output': info})
 
                     else:
@@ -62,7 +62,7 @@ class execCustomCommand:
 
                 except Exception as error_message:
                     info = str(error_message)
-                    print(host['host'] + " - " + info)
+                    config.logger.warning(f"{host['host']} {info}")
                     responseData.append({'success': False, 'host': host['host'], 'output': info})
 
         return responseData

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import os
-import datetime
 import config
 import json
 
@@ -32,14 +31,6 @@ app.mount("/static", StaticFiles(directory="dist/static"), name="static")
 blacklistHosts = os.path.join(config.blackListFile)  # Blacklist from config.py
 
 
-###################
-# LOGGER
-def dataLogger(IPaddress, requestData, call):
-    logFile = open(config.logFile, "a")  # In config.py
-    dateNtime = datetime.datetime.now()
-    logFile.write(str(dateNtime) + " - " + IPaddress + " - " + str(requestData) + ' - ' + call + "\n")
-
-
 ####################
 # START / ROUTE
 if config.gui_enabled:  # Enables frontend gui
@@ -50,8 +41,8 @@ if config.gui_enabled:  # Enables frontend gui
 else:
     @app.get("/")
     async def send_frontend_api(request: Request):
-        dataLogger(request.client.host, request.body(), 'Path: /')
-        return {"status": "success", "name": "Webnetter API", "version": config.webnetterAPI_version, "message": "Documentation can be found at https://github.com/codekuu/webnetter-api", "online": "true"}
+        config.logger.info(f"{request.client.host} {request.body()} Path: /")
+        return {"status": "success", "name": "Webnetter API", "version": config.webnetterAPI_version, "message": "Documentation can be found at https://github.com/codekuu/webnetter-api", "online": True}
 
 
 ###################
@@ -60,11 +51,11 @@ else:
 def getICMP(request: Request, hostname: str):
     try:
         call = pingHost.ping(hostname)
-        dataLogger(request.client.host, request.body(), str(call))
+        config.logger.info(f"{request.client.host} {request.body()} {call}")
         return {"status": "success", "data": call}
 
     except Exception as e:
-        dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
+        config.logger.warning(f"{request.client.host} {request.body()} {e}")
         return {"status": "fail", "message": "Operation failed, try again or contact admin."}
 
 
@@ -75,11 +66,11 @@ def run_commands_on_hosts(request: Request, hosts: Runcommands_model):
     try:
         hosts_dict = hosts.dict()
         call = asyncio.run(commandAPI.ecc(request, hosts_dict['hosts']))
-        dataLogger(request.client.host, request.body(), str(call))
+        config.logger.info(f"{request.client.host} {request.body()} {call}")
         return {"status": "success", "data": call}
 
     except Exception as e:
-        dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
+        config.logger.warning(f"{request.client.host} {request.body()} {e}")
         return {"status": "fail", "message": "Operation failed, try again or contact admin."}
 
 
@@ -90,11 +81,11 @@ def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile =
     try:
         json_hosts = json.loads(hosts)
         call = asyncio.run(confAPI.execConf(request, json_hosts, file))
-        dataLogger(request.client.host, request.body(), str(call))
+        config.logger.info(f"{request.client.host} {request.body()} {call}")
         return {"status": "success", "data": call}
 
     except Exception as e:
-        dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
+        config.logger.warning(f"{request.client.host} {request.body()} {e}")
         return {"status": "fail", "message": "Operation failed, try again or contact admin."}
 
 
@@ -105,9 +96,9 @@ def scp_file_to_hosts(request: Request, hosts: str = Form(...), file: UploadFile
     try:
         json_hosts = json.loads(hosts)
         call = asyncio.run(scpAPI.execSCP(request, json_hosts, file))
-        dataLogger(request.client.host, request.body(), str(call))
+        config.logger.info(f"{request.client.host} {request.body()} {call}")
         return {"status": "success", "data": call}
 
     except Exception as e:
-        dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
+        config.logger.warning(f"{request.client.host} {request.body()} {e}")
         return {"status": "fail", "message": "Operation failed, try again or contact admin."}
