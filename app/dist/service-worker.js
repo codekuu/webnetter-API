@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.dd6ab0b8b9cec2ebd9161f2de4ddf9b1.js"
+  "/precache-manifest.ae81fde4ae3f525df7e21825f8431f71.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "WebnetterAPI"});
