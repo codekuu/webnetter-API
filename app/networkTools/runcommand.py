@@ -9,9 +9,9 @@ import config
 from netmiko import ConnectHandler
 
 
-class execCustomCommand:
+class runcommand:
 
-    async def ecc(request, hosts):
+    async def run(request, hosts):
 
         ###################
         # BACKEND
@@ -20,8 +20,6 @@ class execCustomCommand:
 
         # Setting standard Request Message
         responseData = []
-        print(hosts)
-        print(type(hosts))
 
         for host in hosts:
 
@@ -55,7 +53,7 @@ class execCustomCommand:
                         except Exception as error_message:
                             info = str(error_message)
                             config.logger.warning(f"{host['host']} {info}")
-                            responseData.append({'success': False, 'host': host['host'], 'output': info})
+                            responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': info})
 
                     else:
                         responseData.append({'success': False, 'host': host['host'], 'output': 'Host blacklisted.'})
@@ -63,6 +61,6 @@ class execCustomCommand:
                 except Exception as error_message:
                     info = str(error_message)
                     config.logger.warning(f"{host['host']} {info}")
-                    responseData.append({'success': False, 'host': host['host'], 'output': info})
+                    responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': info})
 
         return responseData

@@ -6,10 +6,10 @@ import json
 
 ######################################
 # BACKEND FILES
-from networkTools.ping.pinger import Pinger as pingHost
-from networkTools.runcommand.execCustomCommand import execCustomCommand as commandAPI
-from networkTools.configure.execConfigure import execConfigure as confAPI
-from networkTools.scp.scpFile import sendFile as scpAPI
+from networkTools.ping import ping
+from networkTools.runcommand import runcommand
+from networkTools.configure import configure
+from networkTools.scp import scp
 
 ###################
 #  FastAPI & Pydantic
@@ -50,7 +50,7 @@ else:
 @app.get("/webnetter/ping/{hostname}")
 def getICMP(request: Request, hostname: str):
     try:
-        call = pingHost.ping(hostname)
+        call = asyncio.run(ping.run(hostname))
         config.logger.info(f"{request.client.host} {request.body()} {call}")
         return {"status": "success", "data": call}
 
@@ -65,7 +65,7 @@ def getICMP(request: Request, hostname: str):
 def run_commands_on_hosts(request: Request, hosts: Runcommands_model):
     try:
         hosts_dict = hosts.dict()
-        call = asyncio.run(commandAPI.ecc(request, hosts_dict['hosts']))
+        call = asyncio.run(runcommand.run(request, hosts_dict['hosts']))
         config.logger.info(f"{request.client.host} {request.body()} {call}")
         return {"status": "success", "data": call}
 
@@ -80,7 +80,7 @@ def run_commands_on_hosts(request: Request, hosts: Runcommands_model):
 def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile = File(...)):
     try:
         json_hosts = json.loads(hosts)
-        call = asyncio.run(confAPI.execConf(request, json_hosts, file))
+        call = asyncio.run(configure.run(request, json_hosts, file))
         config.logger.info(f"{request.client.host} {request.body()} {call}")
         return {"status": "success", "data": call}
 
@@ -95,7 +95,7 @@ def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile =
 def scp_file_to_hosts(request: Request, hosts: str = Form(...), file: UploadFile = File(...)):
     try:
         json_hosts = json.loads(hosts)
-        call = asyncio.run(scpAPI.execSCP(request, json_hosts, file))
+        call = asyncio.run(scp.run(request, json_hosts, file))
         config.logger.info(f"{request.client.host} {request.body()} {call}")
         return {"status": "success", "data": call}
 
