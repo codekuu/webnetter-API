@@ -1,43 +1,42 @@
 #!/usr/bin/python3
 
 import os
-import datetime
 import config
 import json
 
 ######################################
 # BACKEND FILES
-from networkTools.ping.pinger import Pinger as pingHost
-from networkTools.runcommand.execCustomCommand import execCustomCommand as commandAPI
-from networkTools.configure.execConfigure import execConfigure as confAPI
-from networkTools.scp.scpFile import sendFile as scpAPI
+from networkTools.ping import ping
+from networkTools.runcommand import runcommand
+from networkTools.configure import configure
+from networkTools.scp import scp
 
 ###################
-#  FastAPI & Pydantic
+#  FastAPI & Starlette
 from fastapi import FastAPI, Request, File, UploadFile, Form
-from fastapi.staticfiles import StaticFiles  # Frontend
-from starlette.responses import FileResponse  # Frontend
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse, JSONResponse
 #
-from basemodels import Runcommands_model
+from basemodels import model_response_ping, model_response_general, model_request_runcommands
 # Async
 import asyncio
 ###################
 
-app = FastAPI()
+if config.swagger_enabled:
+    app = FastAPI(
+        title="Webnetter API",
+        description="Plug and Play Network Management API built on Docker, fastAPI & Netmiko with optional GUI.",
+        version=config.webnetterAPI_version,
+        redoc_url=None
+        )
+else:
+    app = FastAPI(docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory="dist/static"), name="static")
 
 
 ###################
 # BACKEND
 blacklistHosts = os.path.join(config.blackListFile)  # Blacklist from config.py
-
-
-###################
-# LOGGER
-def dataLogger(IPaddress, requestData, call):
-    logFile = open(config.logFile, "a")  # In config.py
-    dateNtime = datetime.datetime.now()
-    logFile.write(str(dateNtime) + " - " + IPaddress + " - " + str(requestData) + ' - ' + call + "\n")
 
 
 ####################
@@ -50,86 +49,129 @@ if config.gui_enabled:  # Enables frontend gui
 else:
     @app.get("/")
     async def send_frontend_api(request: Request):
-        dataLogger(request.client.host, request.body(), 'Path: /')
-        return {"status": "success", "name": "Webnetter API", "version": config.webnetterAPI_version, "message": "Documentation can be found at https://github.com/codekuu/webnetter-api", "online": "true"}
+        config.logger.info(f"{request.client.host} {request.url.path} Path: /")
+        return {"status": "success", "name": "Webnetter API", "version": config.webnetterAPI_version, "message": "Documentation can be found at https://github.com/codekuu/webnetter-api", "online": True}
 
 
-###################
-# PING
-@app.get("/webnetter/ping/{hostname}")
+"""
+###################################
+###########     PING    ###########
+###################################
+"""
+
+
+@app.get("/webnetter/ping/{hostname}", response_model=model_response_ping)
 def getICMP(request: Request, hostname: str):
-    with open(blacklistHosts, 'r') as blacklist:
-        if hostname in blacklist.read():
-            return {"status": "error", "message": "Host exist in blacklist."}
+    try:
+        call = asyncio.run(ping.run(hostname))
+        config.logger.info(f"{request.client.host} {request.url.path} {call}")
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "data": call}
+        )
 
-        if request.client.host not in blacklist.read():
-            try:
-                call = pingHost.ping(hostname)
-                dataLogger(request.client.host, request.body(), str(call))
-                return {"status": "success", "data": call}
-
-            except Exception as e:
-                dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
-                return {"status": "fail", "message": "Operation failed, try again or contact admin."}
-        else:
-            return {"status": "error", "message": "Host exist in blacklist."}
-
-
-###################
-# RUN COMMAND
-@app.post("/webnetter/runcommands")
-def run_commands_on_hosts(request: Request, hosts: Runcommands_model):
-    hosts_dict = hosts.dict()
-    with open(blacklistHosts, 'r') as blacklist:
-        if request.client.host not in blacklist.read():
-            call = asyncio.run(commandAPI.ecc(request, hosts_dict['hosts']))
-            dataLogger(request.client.host, request.body(), str(call))
-            return {"status": "success", "data": call}
-
-        else:
-            return {"status": "error", "message": "Host exist in blacklist."}
+    except Exception as e:
+        config.logger.warning(f"{request.client.host} {request.url.path} {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "fail", "message": "Operation failed, check logging for more information."},
+        )
 
 
-###################
-# CONFIGURE
-@app.post("/webnetter/configure")
+"""
+###################################
+########### RUN COMMAND ###########
+###################################
+"""
+
+
+@app.post("/webnetter/runcommands", response_model=model_response_general)
+def run_commands_on_hosts(request: Request, hosts: model_request_runcommands):
+    try:
+        hosts_dict = hosts.dict()
+        call = asyncio.run(runcommand.run(request, hosts_dict['hosts']))
+        config.logger.info(f"{request.client.host} {request.url.path} {call}")
+
+        # Put output from all hosts in one string
+        output_from_all = ""
+        for data in call:
+            fixed_data = data['output'].replace("\n", f"\n[{data['host']} {data['software']}] ")
+            output_from_all += f"[{data['host']} {data['software']}] {fixed_data}\n"
+
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "data": call, "outputFromAll": f'{output_from_all}\n'}
+        )
+
+    except Exception as e:
+        config.logger.warning(f"{request.client.host} {request.url.path} {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "fail", "message": "Operation failed, check logging for more information."},
+        )
+
+
+"""
+###################################
+###########  CONFIGURE  ###########
+###################################
+"""
+
+
+@app.post("/webnetter/configure", response_model=model_response_general)
 def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile = File(...)):
-    with open(blacklistHosts, 'r') as blacklist:
-        if request.client.host not in blacklist.read():
-            try:
-                json_hosts = json.loads(hosts)
-                call = asyncio.run(confAPI.execConf(request, json_hosts, file))
-                dataLogger(request.client.host, request.body(), str(call))
-                return {"status": "success", "data": call}
+    try:
+        json_hosts = json.loads(hosts)
+        call = asyncio.run(configure.run(request, json_hosts, file))
+        config.logger.info(f"{request.client.host} {request.url.path} {call}")
 
-            except Exception as e:
-                dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
-                return {"status": "fail", "message": "Operation failed, try again or contact admin."}
-        else:
-            return {"status": "error", "message": "Host exist in blacklist."}
+        # Put output from all hosts in one string
+        output_from_all = ""
+        for data in call:
+            fixed_data = data['output'].replace("\n", f"\n[{data['host']} {data['software']}] ")
+            output_from_all += f"[{data['host']} {data['software']}] {fixed_data}\n"
+
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "data": call, "outputFromAll": f'{output_from_all}\n'}
+        )
+
+    except Exception as e:
+        config.logger.warning(f"{request.client.host} {request.url.path} {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "fail", "message": "Operation failed, check logging for more information."},
+        )
 
 
-###################
-# SCP
-@app.post("/webnetter/scp")
+"""
+###################################
+###########     SCP     ###########
+###################################
+"""
+
+
+@app.post("/webnetter/scp", response_model=model_response_general)
 def scp_file_to_hosts(request: Request, hosts: str = Form(...), file: UploadFile = File(...)):
-    with open(blacklistHosts, 'r') as blacklist:
-        if request.client.host not in blacklist.read():
-            try:
-                json_hosts = json.loads(hosts)
-                call = asyncio.run(scpAPI.execSCP(request, json_hosts, file))
-                dataLogger(request.client.host, request.body(), str(call))
-                return {"status": "success", "data": call}
+    try:
+        json_hosts = json.loads(hosts)
+        call = asyncio.run(scp.run(request, json_hosts, file))
+        config.logger.info(f"{request.client.host} {request.url.path} {call}")
 
-            except Exception as e:
-                dataLogger(request.client.host, request.body(), 'Failed due to: ' + str(e))
-                return {"status": "fail", "message": "Operation failed, try again or contact admin."}
-        else:
-            return {"status": "error", "message": "Host exist in blacklist."}
+        # Put output from all hosts in one string
+        output_from_all = ""
+        for data in call:
+            fixed_data = data['output'].replace("\n", f"\n[{data['host']} {data['software']}] ")
+            output_from_all += f"[{data['host']} {data['software']}] {fixed_data}\n"
 
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "data": call, "outputFromAll": f'{output_from_all}\n'}
+        )
 
-if __name__ == "__main__":
-    if config.ssl_enabled:  # Change this in Settings.py
-        app.run(host=config.backendHost, ssl_context=(config.fullchain, config.privkey))
-    else:
-        app.run(host=config.backendHost)
+    except Exception as e:
+        config.logger.warning(f"{request.client.host} {request.url.path} {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "fail", "message": "Operation failed, check logging for more information."},
+        )

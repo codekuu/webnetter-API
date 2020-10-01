@@ -9,10 +9,10 @@ import config
 from netmiko import ConnectHandler, file_transfer
 
 
-class sendFile:
+class scp:
 
     # CONFIGURE START
-    async def execSCP(request, hosts, file):
+    async def run(request, hosts, file):
 
         ###################
         # BACKEND
@@ -30,6 +30,13 @@ class sendFile:
             raise Exception('No configuration file found.')
 
         for host in hosts:
+
+            # CHECK IF PASSWORD IS BASE64
+            try:
+                base64.b64encode(base64.b64decode(host['password'])) == host['password']
+            except Exception:
+                responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Password has to be encoded with base64 before process.'})
+                continue
 
             with open(blacklistHosts, 'r') as blacklist:
                 try:
@@ -69,8 +76,8 @@ class sendFile:
 
                             except Exception as error_message:
                                 info = str(error_message)
-                                print(host['host'] + " - " + info)
-                                responseData.append({'success': False, 'host': host['host'], 'output': info})
+                                config.logger.warning(f"{host['host']} {info}")
+                                responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': info})
 
                             # Close and remove file.
                             os.remove(savePath)
@@ -82,7 +89,7 @@ class sendFile:
 
                 except Exception as error_message:
                     info = str(error_message)
-                    print(host['host'] + " - " + info)
-                    responseData.append({'success': False, 'host': host['host'], 'output': info})
+                    config.logger.warning(f"{host['host']} {info}")
+                    responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': info})
 
         return responseData

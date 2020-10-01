@@ -2,7 +2,31 @@ from pydantic import BaseModel
 from typing import List
 
 
-class Runcommands_Hosts(BaseModel):
+"""
+###################################
+########### RUNCOMMANDS ###########
+###################################
+"""
+
+
+class response_dict(BaseModel):
+    host: str
+    up: bool
+
+
+class model_response_ping(BaseModel):
+    status: str
+    data: response_dict
+
+
+"""
+###################################
+########### RUNCOMMANDS ###########
+###################################
+"""
+
+
+class runcommands_request_dict(BaseModel):
     host: str
     username: str
     password: str
@@ -11,32 +35,25 @@ class Runcommands_Hosts(BaseModel):
     command: str
 
 
-# CURRENTLY NOT IN USE.
-# class Configure_Hosts(BaseModel):
-#     host: str
-#     username: str
-#     password: str
-#     device_type: str
-#     port: int
+class model_request_runcommands(BaseModel):
+    hosts: List[runcommands_request_dict]
 
 
-# class Scp_Hosts(BaseModel):
-#     host: str
-#     username: str
-#     password: str
-#     device_type: str
-#     port: int
-#     location: str
+"""
+###################################
+########### RUNCOMMANDS ###########
+###################################
+"""
 
 
-class Runcommands_model(BaseModel):
-    hosts: List[Runcommands_Hosts]
+class general_response_dict(BaseModel):
+    success: bool
+    host: str
+    software: str
+    output: str
 
 
-# CURRENTLY NOT IN USE DUE.
-# class Configure_model(BaseModel):
-#     hosts: List[Configure_Hosts]
-
-
-# class Scp_model(BaseModel):
-#     hosts: List[Scp_Hosts]
+class model_response_general(BaseModel):
+    status: str
+    data: List[general_response_dict]
+    outputFromAll: str

@@ -9,9 +9,9 @@ import config
 from netmiko import ConnectHandler
 
 
-class execConfigure:
+class configure:
 
-    async def execConf(request, hosts, file):
+    async def run(request, hosts, file):
 
         ###################
         # BACKEND
@@ -26,7 +26,7 @@ class execConfigure:
         confugrationFileContent = configurationFileContentBytes.decode('utf-8')
 
         if confugrationFileContent == '':
-            raise Exception('No configuration file found.')
+            raise Exception('Error when parsing configuration file.')
 
         for host in hosts:
 
@@ -34,7 +34,8 @@ class execConfigure:
             try:
                 base64.b64encode(base64.b64decode(host['password'])) == host['password']
             except Exception:
-                return {'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Password has to be encoded with base64 before process.'}
+                responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Password has to be encoded with base64 before process.'})
+                continue
 
             with open(blacklistHosts, 'r') as blacklist:
                 try:
@@ -60,14 +61,14 @@ class execConfigure:
                             try:
                                 # OPERATION
                                 net_connect = ConnectHandler(**connectData)
-                                response = net_connect.send_config_from_file(config_file=savePath)
+                                response = net_connect.send_config_from_file(config_file=savePath, cmd_verify=False)
                                 net_connect.disconnect()
                                 responseData.append({'success': True, 'host': host['host'], 'software': host['device_type'], 'output': response})
 
                             except Exception as error_message:
                                 info = str(error_message)
-                                print(host['host'] + " - " + info)
-                                responseData.append({'success': False, 'host': host['host'], 'output': info})
+                                config.logger.warning(f"{host['host']} {info}")
+                                responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': info})
 
                             # Close and remove file.
                             os.remove(savePath)
@@ -79,7 +80,7 @@ class execConfigure:
 
                 except Exception as error_message:
                     info = str(error_message)
-                    print(host['host'] + " - " + info)
-                    responseData.append({'success': False, 'host': host['host'], 'output': info})
+                    config.logger.warning(f"{host['host']} {info}")
+                    responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': info})
 
         return responseData

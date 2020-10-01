@@ -9,9 +9,9 @@ import config
 from netmiko import ConnectHandler
 
 
-class execCustomCommand:
+class runcommand:
 
-    async def ecc(request, hosts):
+    async def run(request, hosts):
 
         ###################
         # BACKEND
@@ -20,8 +20,6 @@ class execCustomCommand:
 
         # Setting standard Request Message
         responseData = []
-        print(hosts)
-        print(type(hosts))
 
         for host in hosts:
 
@@ -29,7 +27,8 @@ class execCustomCommand:
             try:
                 base64.b64encode(base64.b64decode(host['password'])) == host['password']
             except Exception:
-                return {'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Password has to be encoded with base64 before process.'}
+                responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Password has to be encoded with base64 before process.'})
+                continue
 
             with open(blacklistHosts, 'r') as blacklist:
 
@@ -48,21 +47,21 @@ class execCustomCommand:
                         try:
                             # OPERATION
                             net_connect = ConnectHandler(**connectData)
-                            response = net_connect.send_command(host['command'], use_textfsm=config.useTextFSM)
+                            response = net_connect.send_command(host['command'])
                             net_connect.disconnect()
                             responseData.append({'success': True, 'host': host['host'], 'software': host['device_type'], 'output': response})
 
                         except Exception as error_message:
                             info = str(error_message)
-                            print(host['host'] + " - " + info)
-                            responseData.append({'success': False, 'host': host['host'], 'output': info})
+                            config.logger.warning(f"{host['host']} {info}")
+                            responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': info})
 
                     else:
                         responseData.append({'success': False, 'host': host['host'], 'output': 'Host blacklisted.'})
 
                 except Exception as error_message:
                     info = str(error_message)
-                    print(host['host'] + " - " + info)
-                    responseData.append({'success': False, 'host': host['host'], 'output': info})
+                    config.logger.warning(f"{host['host']} {info}")
+                    responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': info})
 
         return responseData

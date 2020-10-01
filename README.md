@@ -11,7 +11,9 @@ Plug and Play Network Management API built on Docker, fastAPI & Netmiko with opt
   - [Example Calls](#example-calls)
 - [Contribute](contribute)
 
-[:computer: Click here for Live demo :computer:](https://oppetinternet.se/webnetter)
+Live demos:
+[:computer: GUI Enabled :computer:](https://oppetinternet.se/webnetter)
+[:computer: Swagger Docs :computer:](https://oppetinternet.se/docs)
 
 
 ## Description
@@ -43,28 +45,25 @@ See [Netmiko](https://github.com/ktbyers/netmiko) for all supported platforms an
 ## Setup
 **Requirements:** Docker & Network connection.
 
-    sudo docker build -t webnetter-image .
-    sudo docker run --net=host -d --name webnetter-container -p 80:80 webnetter-image
+    docker build -t webnetter-image .
+    docker run --net=host -d --name webnetter-container -p 80:80 webnetter-image
 
 
 ## Settings
 You can configure most of the main settings through the `config.py` file which is located in the main folder.
 
-**TLS SSL**
-Disabled as default but you can add keys and enable it through `config.py`.
-
 **FRONTEND GUI**
-Enabled as default, can be disabled.
+ENABLED as default, can be disabled.
 
-**BACKEND HOST**
-0.0.0.0 as default.
+**SWAGGER DOCS**
+ENABLED as default, can be disabled.
 
 **LOGFILE**
-We are logging every request made into a logfile, you can change filename and where to log.
+Logging requests made into a logfile with logging module, you can change filename and destination.
 
 **BLACKLIST**
 We provide a blacklist filter which every function looks through before making a request through netmiko.
-Here you can add IP address of anything you would like to block, people using it or machines you want to be out of reach. EMPTY as default.
+Here you can add IP address of end-devices you would like to block, EMPTY as default.
 
 ## ENDPOINTS
 

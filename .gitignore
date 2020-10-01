@@ -1,5 +1,4 @@
 # OWN STUFF
-server-calls.log
 venv/
 app/networkTools/configure/CONFIGURATION_FOLDER/*
 app/networkTools/scp/CONFIGURATION_FOLDER/*
