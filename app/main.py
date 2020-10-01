@@ -52,12 +52,15 @@ def getICMP(request: Request, hostname: str):
     try:
         call = asyncio.run(ping.run(hostname))
         config.logger.info(f"{request.client.host} {request.url.path} {call}")
-        return {"status": "success", "data": call}
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "data": call}
+        )
 
     except Exception as e:
         config.logger.warning(f"{request.client.host} {request.url.path} {e}")
         return JSONResponse(
-            status_code=400,
+            status_code=500,
             content={"status": "fail", "message": "Operation failed, check logging for more information."},
         )
 
@@ -70,12 +73,21 @@ def run_commands_on_hosts(request: Request, hosts: Runcommands_model):
         hosts_dict = hosts.dict()
         call = asyncio.run(runcommand.run(request, hosts_dict['hosts']))
         config.logger.info(f"{request.client.host} {request.url.path} {call}")
-        return {"status": "success", "data": call}
+
+        # Put output from all hosts in one string
+        output_from_all = ""
+        for data in call:
+            output_from_all += f"{data['host']}-{data['software']}:\n{data['output']}\n"
+
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "data": call, "outputFromAll": output_from_all}
+        )
 
     except Exception as e:
         config.logger.warning(f"{request.client.host} {request.url.path} {e}")
         return JSONResponse(
-            status_code=400,
+            status_code=500,
             content={"status": "fail", "message": "Operation failed, check logging for more information."},
         )
 
@@ -88,15 +100,21 @@ def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile =
         json_hosts = json.loads(hosts)
         call = asyncio.run(configure.run(request, json_hosts, file))
         config.logger.info(f"{request.client.host} {request.url.path} {call}")
+
+        # Put output from all hosts in one string
+        output_from_all = ""
+        for data in call:
+            output_from_all += f"{data['host']}-{data['software']}:\n{data['output']}\n"
+
         return JSONResponse(
             status_code=200,
-            content={"status": "success", "data": call},
+            content={"status": "success", "data": call, "outputFromAll": output_from_all}
         )
 
     except Exception as e:
         config.logger.warning(f"{request.client.host} {request.url.path} {e}")
         return JSONResponse(
-            status_code=400,
+            status_code=500,
             content={"status": "fail", "message": "Operation failed, check logging for more information."},
         )
 
@@ -109,11 +127,17 @@ def scp_file_to_hosts(request: Request, hosts: str = Form(...), file: UploadFile
         json_hosts = json.loads(hosts)
         call = asyncio.run(scp.run(request, json_hosts, file))
         config.logger.info(f"{request.client.host} {request.url.path} {call}")
+
+        # Put output from all hosts in one string
+        output_from_all = ""
+        for data in call:
+            output_from_all += f"{data['host']}-{data['software']}:\n{data['output']}\n"
+
         return {"status": "success", "data": call}
 
     except Exception as e:
         config.logger.warning(f"{request.client.host} {request.url.path} {e}")
         return JSONResponse(
-            status_code=400,
+            status_code=500,
             content={"status": "fail", "message": "Operation failed, check logging for more information."},
         )
