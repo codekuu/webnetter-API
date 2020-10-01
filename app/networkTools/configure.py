@@ -74,9 +74,9 @@ class configure:
                             os.remove(savePath)
 
                         else:
-                            responseData.append({'success': False, 'host': host['host'], 'output': 'Missing data in request.'})
+                            responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Missing data in request.'})
                     else:
-                        responseData.append({'success': False, 'host': host['host'], 'output': 'Host blacklisted.'})
+                        responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Host blacklisted.'})
 
                 except Exception as error_message:
                     info = str(error_message)

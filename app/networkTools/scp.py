@@ -66,11 +66,11 @@ class scp:
                                 if dataFromHost['file_verified']:
                                     if dataFromHost['file_exists']:
                                         if dataFromHost['file_transferred']:
-                                            responseData.append({'success': True, 'host': host['host'], 'software': host['device_type'], 'output': file.filename + ' was transferred and verified.'})
+                                            responseData.append({'success': True, 'host': host['host'], 'software': host['device_type'], 'output': f"{file.filename} was transferred and verified."})
                                         else:
-                                            responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Could not transfer file, it already exist in ' + host['location'] + '.'})
+                                            responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': f"Could not transfer file, it already exist in {host['location']}."})
                                     else:
-                                        responseData.append({'success': True, 'host': host['host'], 'software': host['device_type'], 'output': file.filename + ' was transferred and verified.'})
+                                        responseData.append({'success': True, 'host': host['host'], 'software': host['device_type'], 'output': f"{file.filename} was transferred and verified."})
                                 else:
                                     responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'We could not verify file transfer, check manually.'})
 

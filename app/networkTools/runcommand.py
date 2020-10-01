@@ -57,7 +57,7 @@ class runcommand:
                             responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': info})
 
                     else:
-                        responseData.append({'success': False, 'host': host['host'], 'output': 'Host blacklisted.'})
+                        responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Host blacklisted.'})
 
                 except Exception as error_message:
                     info = str(error_message)
