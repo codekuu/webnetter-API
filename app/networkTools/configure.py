@@ -34,7 +34,8 @@ class configure:
             try:
                 base64.b64encode(base64.b64decode(host['password'])) == host['password']
             except Exception:
-                return {'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Password has to be encoded with base64 before process.'}
+                responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Password has to be encoded with base64 before process.'})
+                continue
 
             with open(blacklistHosts, 'r') as blacklist:
                 try:

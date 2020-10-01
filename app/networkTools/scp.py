@@ -31,6 +31,13 @@ class scp:
 
         for host in hosts:
 
+            # CHECK IF PASSWORD IS BASE64
+            try:
+                base64.b64encode(base64.b64decode(host['password'])) == host['password']
+            except Exception:
+                responseData.append({'success': False, 'host': host['host'], 'software': host['device_type'], 'output': 'Password has to be encoded with base64 before process.'})
+                continue
+
             with open(blacklistHosts, 'r') as blacklist:
                 try:
                     if host['host'] not in blacklist.read():

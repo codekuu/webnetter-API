@@ -5,9 +5,10 @@
 import os
 ###################
 
+
 class ping:
 
-    def run(IPorHOSTNAME):
+    async def run(IPorHOSTNAME):
 
         hostname = IPorHOSTNAME
         response = os.system(f"ping -c 1 {hostname} > /dev/null")
