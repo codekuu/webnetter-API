@@ -17,7 +17,7 @@ from fastapi import FastAPI, Request, File, UploadFile, Form
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, JSONResponse
 #
-from basemodels import Runcommands_model
+from basemodels import model_response_ping, model_response_general, model_request_runcommands
 # Async
 import asyncio
 ###################
@@ -45,9 +45,14 @@ else:
         return {"status": "success", "name": "Webnetter API", "version": config.webnetterAPI_version, "message": "Documentation can be found at https://github.com/codekuu/webnetter-api", "online": True}
 
 
-###################
-# PING
-@app.get("/webnetter/ping/{hostname}")
+"""
+###################################
+###########     PING    ###########
+###################################
+"""
+
+
+@app.get("/webnetter/ping/{hostname}", response_model=model_response_ping)
 def getICMP(request: Request, hostname: str):
     try:
         call = asyncio.run(ping.run(hostname))
@@ -65,10 +70,15 @@ def getICMP(request: Request, hostname: str):
         )
 
 
-###################
-# RUN COMMAND
-@app.post("/webnetter/runcommands")
-def run_commands_on_hosts(request: Request, hosts: Runcommands_model):
+"""
+###################################
+########### RUN COMMAND ###########
+###################################
+"""
+
+
+@app.post("/webnetter/runcommands", response_model=model_response_general)
+def run_commands_on_hosts(request: Request, hosts: model_request_runcommands):
     try:
         hosts_dict = hosts.dict()
         call = asyncio.run(runcommand.run(request, hosts_dict['hosts']))
@@ -77,7 +87,7 @@ def run_commands_on_hosts(request: Request, hosts: Runcommands_model):
         # Put output from all hosts in one string
         output_from_all = ""
         for data in call:
-            output_from_all += f"{data['host']}-{data['software']}:\n{data['output']}\n"
+            output_from_all += f"{data['host']}_{data['software']}:\n{data['output']}\n"
 
         return JSONResponse(
             status_code=200,
@@ -92,9 +102,14 @@ def run_commands_on_hosts(request: Request, hosts: Runcommands_model):
         )
 
 
-###################
-# CONFIGURE
-@app.post("/webnetter/configure")
+"""
+###################################
+###########  CONFIGURE  ###########
+###################################
+"""
+
+
+@app.post("/webnetter/configure", response_model=model_response_general)
 def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile = File(...)):
     try:
         json_hosts = json.loads(hosts)
@@ -104,7 +119,7 @@ def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile =
         # Put output from all hosts in one string
         output_from_all = ""
         for data in call:
-            output_from_all += f"{data['host']}-{data['software']}:\n{data['output']}\n"
+            output_from_all += f"{data['host']}_{data['software']}:\n{data['output']}\n"
 
         return JSONResponse(
             status_code=200,
@@ -119,9 +134,14 @@ def configure_hosts(request: Request, hosts: str = Form(...), file: UploadFile =
         )
 
 
-###################
-# SCP
-@app.post("/webnetter/scp")
+"""
+###################################
+###########     SCP     ###########
+###################################
+"""
+
+
+@app.post("/webnetter/scp", response_model=model_response_general)
 def scp_file_to_hosts(request: Request, hosts: str = Form(...), file: UploadFile = File(...)):
     try:
         json_hosts = json.loads(hosts)
@@ -131,9 +151,12 @@ def scp_file_to_hosts(request: Request, hosts: str = Form(...), file: UploadFile
         # Put output from all hosts in one string
         output_from_all = ""
         for data in call:
-            output_from_all += f"{data['host']}-{data['software']}:\n{data['output']}\n"
+            output_from_all += f"{data['host']}_{data['software']}:\n{data['output']}\n"
 
-        return {"status": "success", "data": call}
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "data": call, "outputFromAll": output_from_all}
+        )
 
     except Exception as e:
         config.logger.warning(f"{request.client.host} {request.url.path} {e}")
