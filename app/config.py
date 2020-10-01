@@ -27,4 +27,4 @@ swagger_enabled = True  # True / False
 
 ########################################################
 # SCRIPT START OUTPUT
-webnetterAPI_version = "2.0"
+webnetterAPI_version = "2.1"
