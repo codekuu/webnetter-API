@@ -8,14 +8,6 @@
 import logging
 ###################
 
-
-###################
-# FLASK
-backendHost = '0.0.0.0'  # Host Adress
-indexFile = 'index.html'  # FLASK render_template
-###################
-
-
 ###################
 # GENERAL
 # LOGGING
