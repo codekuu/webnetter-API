@@ -2,7 +2,7 @@
 
 ###################
 # Imports
-import os
+import subprocess
 ###################
 
 
@@ -11,16 +11,16 @@ class ping:
     async def run(IPorHOSTNAME):
 
         hostname = IPorHOSTNAME
-        response = os.system(f"ping -c 1 {hostname} > /dev/null")
+        param = '-c'
+        command = ['ping', param, '1', hostname]
+        response = subprocess.call(command) == 0
 
-        if response == 0:
-            responseMessage = True
-        else:
-            responseMessage = False
+        if response is True or response is False:
+            response_clean = response
 
         # RESPONSE
         pingData = {}
         pingData['host'] = hostname
-        pingData['up'] = responseMessage
+        pingData['up'] = response_clean
 
         return pingData
