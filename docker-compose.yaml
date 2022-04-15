@@ -1,0 +1,10 @@
+version: "3.3"
+
+services:
+  webnetterAPI:
+    build: .
+    container_name: webnetterAPI
+    image: webnetterAPI:latest
+    expose:
+      - 80
+    restart: always

@@ -1,0 +1,5 @@
+netmiko==4.0.0
+python-multipart==0.0.5
+fastapi==0.75.1
+uvicorn==0.17.6
+aiofiles==0.8.0
