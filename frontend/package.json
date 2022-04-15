@@ -10,7 +10,7 @@
   },
   "main": "background.js",
   "dependencies": {
-    "axios": "0.20.0",
+    "axios": "0.21.2",
     "core-js": "3.6.5",
     "serialize-javascript": "^5.0.1",
     "vue": "2.6.12",
