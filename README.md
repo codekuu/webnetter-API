@@ -11,10 +11,6 @@ Plug and Play Network Management API built on Docker, fastAPI & Netmiko with GUI
   - [Example Calls](#example-calls)
 - [Contribute](contribute)
 
-Live demos:
-[:computer: GUI Enabled :computer:](https://oppetinternet.se/webnetter)
-[:computer: Swagger Docs :computer:](https://oppetinternet.se/docs)
-
 
 ## Description
 
