@@ -1,5 +1,5 @@
 <h1>Archived</h1>
-<h2>Webnetter-API has been archived and I am currently working on a replacement, keep an eye on https://github.com/Webnetter.<h2/>
+<h2>Webnetter-API has been archived.<h2/>
 
 <p align="center">
   <img src="https://i.imgur.com/SWoPeSe.png">
